@@ -12,11 +12,13 @@
  */
 
 import { a } from "vitest/dist/suite-ynYMzeLu.js";
+export interface Env {
+	GITHUB_TOKEN: string;
+  }
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = 'https://api.github.com/repos/FOSSBilling/FOSSBilling/actions/artifacts';
-		console.log(url);
 		const response = await fetch(url, {
 			headers: {
 				'Content-Type': 'application/json',
@@ -25,16 +27,22 @@ export default {
 			},
 		});
 		const jsonResponse = await response.json();
-		console.log(jsonResponse);
 		const artifacts = jsonResponse.artifacts;
+		let artifact_id = '';
+		let run_id = '';
 		let archive_download_url = '';
 		for (const artifact of artifacts) {
-			if (artifact.name == 'preview-build' && artifact.workflow_run.head_branch == "main") {
+			if (artifact.name == 'FOSSBilling Preview' && artifact.workflow_run.head_branch == "main") {
 				console.log(artifact);
-				archive_download_url = 'https://github.com/FOSSBilling/FOSSBilling/actions/runs/' +  artifact.workflow_run.id +'/artifacts/'+ artifact.id;
+				archive_download_url = artifact.archive_download_url;
+				artifact_id = artifact.id;
+				run_id = artifact.workflow_run.id;
 				break;
 			}
 		}
-		return Response.redirect(archive_download_url, 301);
+
+		console.log(archive_download_url);
+		
+		return new Response('Hello worker', {	status: 200 });
 	},
 } satisfies ExportedHandler<Env>;
